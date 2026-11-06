@@ -6,12 +6,12 @@ variance-mixture representation X = g + sqrt(V) * Z, V ~ GIG(alpha, delta,
 lambda), Z ~ N(0,1), and its nested special cases (variance-gamma,
 hyperbolic, normal-inverse Gaussian, Student t, normal).
 
-A Context7 lookup of SciPy confirmed ``scipy.stats.genhyperbolic`` exists,
-but in a different ("4th", Prause 1999) parametrization (shapes p, a, b)
-that is not delta/alpha-bar based, so it would require re-deriving the
-paper's (g, sigma, alpha_bar, lambda) parametrization and its sigma-delta
-conversion (Sec. 5.1) on top of it regardless. The density and its nested
-cases are therefore implemented directly from the paper's formulae, using
+SciPy provides ``scipy.stats.genhyperbolic``, but in a different ("4th",
+Prause 1999) parametrization (shapes p, a, b) that is not delta/alpha-bar
+based, so using it would still require re-deriving the paper's (g, sigma,
+alpha_bar, lambda) parametrization and its sigma-delta conversion (Sec. 5.1)
+on top of it. The density and its nested cases are therefore implemented
+directly from the paper's formulae, using
 ``scipy.special.kv`` (SciPy) for the modified Bessel function of the second
 kind and ``scipy.optimize.minimize`` for maximum likelihood estimation.
 """
@@ -51,7 +51,7 @@ def variance_gamma_logpdf(x: np.ndarray, g: float, sigma: float, lam: float) -> 
     """log-density of the symmetric variance-gamma special case (delta=0, lambda>0).
 
     Obtained as the delta -> 0 limit of ``sgh_logpdf`` with alpha = sqrt(2*lam)/sigma
-    held fixed (Sec. 5.1, implementation notes):
+    held fixed (Sec. 5.1):
     f(x) = alpha^{lam+1/2} |x-g|^{lam-1/2} K_{lam-1/2}(alpha |x-g|) / (Gamma(lam) 2^{lam-1} sqrt(2 pi))
     """
     alpha = np.sqrt(2.0 * lam) / sigma

@@ -164,17 +164,17 @@ reverse of the paper's ordering.
   removed" (Sec. 4.1, data requirements).** No daily return was removed, capped
   or winsorized in the loaded data for any experiment.
 - **Numerical optimizer for Experiment 4.** The paper specifies maximum
-  likelihood but not the optimizer (Sec. 5.3, "uncertainties"). Nelder-Mead
-  (derivative-free) was used because the SGH log-likelihood has a Bessel-
-  function singularity as alpha_bar to 0 (the Student t limit), where gradient-based
-  optimizers are numerically unstable.
+  likelihood estimation but does not specify the optimizer (Sec. 5.3).
+  Nelder-Mead (derivative-free) was used because the SGH log-likelihood has a
+  Bessel-function singularity as alpha_bar to 0 (the Student t limit), where
+  gradient-based optimizers are numerically unstable.
 - **Grid search range for Experiment 2's initial activity time.** The paper
-  does not specify the grid (Sec. 2.1, "uncertainties"); a grid of tau_{t0}
-  from -10 to 0 in steps of 0.01 was used, as suggested by the paper's own
-  reported values (-3.6 and -6.9) lying in that range.
+  does not specify the grid (Sec. 2.1); a grid of tau_{t0} from -10 to 0 in
+  steps of 0.01 was used, as suggested by the paper's own reported values
+  (-3.6 and -6.9) lying in that range.
 - **Numerical differentiation method for Experiment 2's activity.** The paper
-  does not specify it (Sec. 2.1, "uncertainties"); central finite differences
-  of the activity time with respect to calendar time were used.
+  does not specify it (Sec. 2.1); central finite differences of the activity
+  time with respect to calendar time were used.
 
 ## Not reproduced
 
