@@ -50,7 +50,7 @@ File: `results/exp2_activity_time_fit.csv`, `results/exp2_meta.json`,
 
 | Series | tau_{t0} | trendline slope | R^2 | Paper value | Verdict |
 |---|---|---|---|---|---|
-| MSCI proxy | -0.0400 | 0.1327 | 0.9692 | tau_{t0}=-3.6, slope=0.065, R^2=0.993 | partially reproduced (R^2 within 10%; slope about 2x the paper's, tau_{t0} not comparable, see below) |
+| MSCI proxy | -0.0400 | 0.1327 | 0.9692 | tau_{t0}=-3.6, slope=0.065, R^2=0.993 | partially reproduced (R^2 within 10%; slope about 2x the paper's, identified cause: shorter realized sample window, see below) |
 | EWI17 proxy (highest-resolution EWI available) | -3.6100 | 0.1698 | 0.9790 | tau_{t0}=-6.9, slope=0.171, R^2=0.976 (EWI163) | reproduced (slope and R^2 both within 10%) |
 
 tau_{t0} is the logarithm of the initial quadratic variation of the square
@@ -59,6 +59,21 @@ arbitrary starting level of each index (Sec. 2.1); it is not comparable across
 samples of different length and is not scored against the paper's value. The
 linear-in-calendar-time property of the activity time (the MMM parametrization
 assumption, Sec. 2.1) is confirmed for both proxies (R^2 > 0.96).
+
+The identified cause of the MSCI proxy's slope being about twice the paper's
+0.065 is the shortened, more recent sample window (Sec. 2.1's slope is the
+average activity a_bar = d(tau_t)/dt, which rises with realized volatility).
+Fitting the same activity-time trendline to the MSCI proxy (ACWI) alone, whose
+own history starts in 2008, over progressively shorter windows gives a slope
+that rises monotonically as the window shortens and shifts toward the more
+volatile recent period: slope=0.0422 (R^2=0.9475) over 2008-2024 (closest to
+the paper's 51-year window and closest to the paper's 0.065), slope=0.1330
+(R^2=0.9692) over 2011-2024 (the panel-constrained window used above),
+slope=0.2390 (R^2=0.9693) over 2015-2024. This confirms that the gap is
+attributable to the realized window being a recent, higher-volatility
+15-year slice of the market rather than the paper's full 51-year window
+(1973-2024, including the calmer 1970s-1990s decades), not to a defect in
+the activity-time estimator.
 
 ## Experiment 3: Normalized Activity Simulation with Overreactions (Sec. 3.1-3.2)
 
@@ -159,7 +174,14 @@ reverse of the paper's ordering.
   below EWI1 in level but not in diversification breadth) and the non-monotonic
   degrees of freedom in Experiment 4. The cause is stated here as identified
   from direct inspection of the construction inputs, not merely asserted from
-  the size of the gap.
+  the size of the gap. The 40-basis-point transaction cost of Eq. (4.3) was
+  checked and ruled out as an alternative explanation: summing the recursive
+  turnover series `TO(t_i)` over the full sample gives a cumulative cost drag
+  of 0.109 (EWI1), 0.107 (EWI11) and 0.206 (EWI17) index points out of a total
+  index path of several units, equivalent to at most a few basis points of
+  annualised growth per level -- two orders of magnitude smaller than the
+  4-5 percentage-point gap between EWI1 and EWI11/EWI17, so turnover cost
+  cannot be the driver of the reversed ordering.
 - **Interpretation of "no seemingly unusual index moves or jumps should be
   removed" (Sec. 4.1, data requirements).** No daily return was removed, capped
   or winsorized in the loaded data for any experiment.
