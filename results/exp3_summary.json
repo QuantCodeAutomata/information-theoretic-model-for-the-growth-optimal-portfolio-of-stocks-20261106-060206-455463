@@ -1,0 +1,15 @@
+{
+  "n_steps": 13100,
+  "kappa": 1.97,
+  "xi": 0.0042,
+  "a_bar": 0.15,
+  "delta": 0.003816793893129771,
+  "mean_sgn": 0.0018319212273872224,
+  "sample_covariation_rate": -0.0007325246529181511,
+  "theoretical_mean": 7.225960000000001,
+  "sample_mean": 7.287251659759806,
+  "fitted_gamma_shape": 0.49831289992393674,
+  "fitted_gamma_scale": 14.623847106651551,
+  "ks_statistic": 0.004657428916183204,
+  "ks_pvalue": 0.9591126789398119
+}

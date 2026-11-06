@@ -66,22 +66,34 @@ def simulate_cir_via_ou(
     Eq. (3.27): db(tau_t) = -kappa_Delta b(tau_t) d tau_t + sqrt(xi) kappa_Delta dW,
     a(tau_t) = b(tau_t)^2, kappa_Delta = kappa / (a_bar * Delta).
 
-    With this diffusion coefficient, b is a mean-zero OU process with
-    stationary variance (sqrt(xi)*kappa_Delta)^2 / (2*kappa_Delta)
-    = xi*kappa_Delta/2, so a = b^2 is a CIR process of dimension 1 with
-    stationary mean xi*kappa_Delta/2 (Sec. 3.2). Euler-Maruyama
-    discretization in normalized activity time (constant step dtau = a_bar * delta).
+    b is a mean-zero OU process with stationary variance
+    (sqrt(xi)*kappa_Delta)^2 / (2*kappa_Delta) = xi*kappa_Delta/2, so
+    a = b^2 is a CIR process of dimension 1 with stationary mean
+    xi*kappa_Delta/2 (Sec. 3.2).
+
+    Because kappa_Delta * dtau = kappa (close to 2, not small -- that is the
+    point of the overreaction parametrization), a plain Euler-Maruyama step
+    does not reproduce this stationary variance: it discretizes the mean
+    -reversion term as (1 - kappa_Delta*dtau) = (1-kappa), which is only a
+    good approximation of exp(-kappa_Delta*dtau) when kappa_Delta*dtau is
+    small. Instead this uses the exact Ornstein-Uhlenbeck transition kernel
+    (Kloeden & Platen, "Numerical Solution of SDEs", the exact scheme for a
+    linear mean-reverting SDE), which reproduces the SDE's stationary
+    variance xi*kappa_Delta/2 for any step size:
+        b_i = phi * b_{i-1} + sqrt(stationary_var * (1 - phi^2)) * Z_i,
+        phi = exp(-kappa_Delta * dtau).
     """
     kappa_delta = kappa / (a_bar * delta)
     rng = np.random.default_rng(seed)
     dtau = a_bar * delta
     tau = np.arange(n_steps + 1) * dtau
+    stationary_var = xi * kappa_delta / 2.0
+    phi = np.exp(-kappa_delta * dtau)
+    innovation_std = np.sqrt(stationary_var * (1.0 - phi**2))
+    z = rng.standard_normal(n_steps)
     b = np.empty(n_steps + 1)
-    # Stationary variance of b is xi*kappa_Delta/2; start at 0.
     b[0] = 0.0
-    dw = rng.standard_normal(n_steps) * np.sqrt(dtau)
-    sigma = np.sqrt(xi) * kappa_delta
     for i in range(1, n_steps + 1):
-        b[i] = b[i - 1] - kappa_delta * b[i - 1] * dtau + sigma * dw[i - 1]
+        b[i] = phi * b[i - 1] + innovation_std * z[i - 1]
     a = b**2
-    return {"tau": tau, "b": b, "a": a, "kappa_delta": kappa_delta}
+    return {"tau": tau, "b": b, "a": a, "kappa_delta": kappa_delta, "stationary_var": stationary_var}
