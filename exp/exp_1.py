@@ -18,11 +18,19 @@ cap-weighted indices:
 
   d=1   -- COUNTRY_ETFS: one cap-weighted MSCI single-country index ETF per
            country, equally weighted across countries (no sector split).
-  d=11  -- SECTOR_ETFS: the 11 GICS Select Sector SPDR ETFs for the United
-           States, equally weighted across sectors (single country).
+  d=11  -- GLOBAL_SECTOR_ETFS: the 11 iShares S&P Global 1200 sector ETFs,
+           each itself a cap-weighted index of stocks from many countries
+           within one GICS-style sector, equally weighted across sectors.
+           This keeps the paper's "equally weight across countries within
+           each classification group, then equally weight across groups"
+           two-stage construction (Sec. 4.1), unlike single-country sector
+           funds, at the cost of not knowing the exact per-sector country
+           count (the ETF itself performs the within-sector country
+           weighting).
   d=H   -- INDUSTRY_ETFS: GICS industry-level SPDR ETFs for the United
            States, the highest classification resolution available from
-           exchange-traded funds (single country).
+           exchange-traded funds (single country; no globally diversified
+           industry-level fund family exists).
 
 This substitution and its consequences for the d-monotonicity hypothesis are
 recorded in results/RESULTS.md, "Deviations from the paper".
@@ -43,9 +51,9 @@ import matplotlib.pyplot as plt
 
 from data.data_loader import (
     COUNTRY_ETFS,
+    GLOBAL_SECTOR_ETFS,
     INDUSTRY_ETFS,
     MSCI_WORLD_PROXY,
-    SECTOR_ETFS,
     load_close_panel,
 )
 from src.config import (
@@ -84,12 +92,12 @@ def _single_group_country_panel(close_panel: pd.DataFrame, country_label: str) -
 def build_all_ewis(start_date: str, end_date: str, use_cache: bool = True) -> dict:
     """Load the three ETF panels and the MSCI proxy, construct the EWIs."""
     country_panel, country_meta = load_close_panel(COUNTRY_ETFS, start_date, end_date, use_cache)
-    sector_panel, sector_meta = load_close_panel(SECTOR_ETFS, start_date, end_date, use_cache)
+    sector_panel, sector_meta = load_close_panel(GLOBAL_SECTOR_ETFS, start_date, end_date, use_cache)
     industry_panel, industry_meta = load_close_panel(INDUSTRY_ETFS, start_date, end_date, use_cache)
     msci_panel, msci_meta = load_close_panel({MSCI_WORLD_PROXY: "MSCI"}, start_date, end_date, use_cache)
 
     ewi1 = construct_ewi(_single_country_panel(country_panel), TRANSACTION_COST_KBAR)
-    ewi11 = construct_ewi(_single_group_country_panel(sector_panel, "US"), TRANSACTION_COST_KBAR)
+    ewi11 = construct_ewi(_single_group_country_panel(sector_panel, "Global"), TRANSACTION_COST_KBAR)
     ewiH = construct_ewi(_single_group_country_panel(industry_panel, "US"), TRANSACTION_COST_KBAR)
     msci = msci_panel["MSCI"].dropna()
 
@@ -107,7 +115,7 @@ def summarize(ewis: dict) -> pd.DataFrame:
     rows = []
     labels = {
         "ewi1": f"EWI1 (d=1, {ewis['meta']['n_countries']} countries)",
-        "ewi11": f"EWI11 (d=11 US sectors)",
+        "ewi11": "EWI11 (d=11 global sectors)",
         "ewiH": f"EWI{ewis['meta']['n_industries']} (d={ewis['meta']['n_industries']} US industries)",
         "msci": "MSCI proxy (ACWI)",
     }

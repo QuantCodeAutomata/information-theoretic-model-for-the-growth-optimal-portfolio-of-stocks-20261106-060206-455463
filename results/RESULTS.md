@@ -17,26 +17,31 @@ File: `results/exp1_growth_rates.csv`, `results/exp1_meta.json`,
 `results/exp1_ewi_comparison.png`.
 
 Realized sample: 2011-01-01 to 2024-07-31, 3,416 daily observations, 38
-countries (single-country MSCI ETFs), 11 GICS sectors (Select Sector SPDR
-ETFs) and 17 available GICS industry-level SPDR ETFs, all dividend-adjusted
-through the QuantX Dataloader (`adjust_dividends=True`). Nineteen tickers were
-served by the Dataloader's Yahoo Finance backstop rather than Massive
-(`exp1_meta.json`, `non_massive_source`): MCHI, EWI, EWJ, EWM, EWS, EWT, EWU,
-INDA, GREK, EIRL, VNM, EDEN, NORW, XLRE, XHS, XHE, XSW, XTL, XTN, XAR.
+countries (single-country MSCI ETFs), 11 GICS-style sectors (iShares S&P
+Global 1200 Global Sector ETFs, each itself cap-weighted across many
+countries) and 17 available GICS industry-level SPDR ETFs (United States
+only), all dividend-adjusted through the QuantX Dataloader
+(`adjust_dividends=True`). Twenty-one tickers were served by the Dataloader's
+Yahoo Finance backstop rather than Massive (`exp1_meta.json`,
+`non_massive_source`): MCHI, EWI, EWJ, EWM, EWS, EWT, EWU, INDA, GREK, EIRL,
+VNM, EDEN, NORW, RXI, REET, XHS, XHE, XSW, XTL, XTN, XAR.
 
 | Index | Annualized growth g | Annualized volatility sigma | Paper value | Verdict |
 |---|---|---|---|---|
 | MSCI proxy (ACWI) | 0.0894 | 0.1755 | ~0.05 (MSCI total return world index) | partially reproduced (same sign, +79% vs. the paper's lower-volatility 1973-2024 window) |
 | EWI1 (d=1, 38 countries) | 0.0390 | 0.1872 | lowest among EWIs, still above MSCI | not reproduced (lower than the MSCI proxy here) |
-| EWI11 (d=11, US sectors) | 0.1140 | 0.1700 | between EWI1 and EWI163, ~0.139 at d=163 | partially reproduced (exceeds MSCI and EWI1, direction right) |
-| EWI17 (d=17, US industries) | 0.0917 | 0.2226 | expected higher than EWI11 (monotonic in d) | not reproduced (lower than EWI11, breaks monotonicity) |
+| EWI11 (d=11, global sectors) | 0.0824 | 0.1682 | between EWI1 and EWI163, ~0.139 at d=163 | not reproduced (below the MSCI proxy here) |
+| EWI17 (d=17, US industries) | 0.0917 | 0.2226 | expected higher than EWI11 (monotonic in d) | partially reproduced (exceeds EWI1, EWI11 and the MSCI proxy; direction right) |
 
 The paper's qualitative prediction -- growth increases monotonically
 (approximately) with the number of independently equal-weighted
-classification groups d, and every EWI exceeds the MSCI benchmark -- does not
-hold in this substitute universe: EWI1 underperforms the MSCI proxy, and
-EWI17 underperforms EWI11. See "Deviations from the paper" for the identified
-cause.
+classification groups d, and every EWI exceeds the MSCI benchmark -- only
+partially holds in this substitute universe: growth is not monotone from
+EWI1 to EWI11 (0.0390 to 0.0824, higher d still beats d=1) but EWI17, the
+highest-resolution proxy, does post the highest growth rate of all four
+series, consistent with the paper's headline ranking (EWI163 highest among
+EWIs). EWI1 and EWI11 both underperform the MSCI proxy here. See "Deviations
+from the paper" for the identified cause.
 
 ## Experiment 2: Activity Time Estimation (Sec. 2.1)
 
@@ -82,7 +87,7 @@ File: `results/exp4_density_fits.csv`, `results/exp4_student_t_lr_test.csv`,
 |---|---|---|---|---|---|---|---|
 | MSCI proxy | SGH (near Student t) | 3.07 | 2.428 | 6.635 | No | Student t not rejected, nu~3.44 | reproduced (qualitative result) |
 | EWI1 | Student t (alpha_bar=1.7e-6) | 3.62 | ~0 | 6.635 | No | Student t not rejected, nu~2.91 (lowest d) | reproduced (qualitative result) |
-| EWI11 | SGH | 2.73 | 4.327 | 6.635 | No | Student t not rejected | reproduced (qualitative result) |
+| EWI11 | SGH (near Student t) | 2.97 | 1.296 | 6.635 | No | Student t not rejected | reproduced (qualitative result) |
 | EWI17 | Student t (alpha_bar=0.013) | 3.80 | 4.6e-5 | 6.635 | No | Student t not rejected, nu closer to 4 at higher d | partially reproduced (not rejected, but nu is not monotonic in d here) |
 
 The paper's central qualitative claim of Sec. 5.3-5.4 -- that the Student t
@@ -94,7 +99,7 @@ paper's Table of Sec. 5.3 (where all statistics are below 0.0001 except for
 the full SGH-level MSCI and EWI11 fits reported above, which are still far
 below the critical value). The normal density is clearly rejected for every
 index (likelihood-ratio statistics 650-1140, against a chi^2_{0.99,2}
-critical value far below these figures). The paper's finer claim that nu
+critical value of 9.210). The paper's finer claim that nu
 increases monotonically with the classification resolution d, with EWI163
 closest to a clean Student t (alpha_bar~0), is not reproduced: in this reduced
 universe EWI11 (d=11) has the lowest nu and EWI17 (d=17) the highest, the
@@ -139,19 +144,22 @@ reverse of the paper's ordering.
   construction equally weights, at every classification level, index values
   that are themselves already diversified across 67 countries (Sec. 4.1: "First
   equally weight across countries within each classification group, then
-  equally weight across all groups"). In this substitute universe, only the
-  d=1 level (the 38 country ETFs) carries country diversification; the d=11
-  and d=17 levels are built entirely from United States sector/industry ETFs,
-  with no cross-country averaging at all. This was confirmed by inspecting the
-  EWI construction inputs in `exp1_meta.json`: the sector and industry levels
-  use `n_countries=1`, while only the d=1 level uses `n_countries=38`. The
-  reduced universe therefore tests "more independent sources of randomness
-  from one country" rather than the paper's "more independent sources of
-  randomness across countries and classification groups simultaneously",
-  which is the most likely cause of the non-monotonic growth rates in
-  Experiment 1 and the non-monotonic degrees of freedom in Experiment 4. The
-  cause is stated here as identified from this direct inspection, not merely
-  asserted from the size of the gap.
+  equally weight across all groups"). The d=1 level (38 single-country MSCI
+  ETFs) and the d=11 level (11 iShares Global Sector ETFs, each a cap-weighted
+  basket of many countries' stocks in one sector) both carry genuine
+  cross-country diversification, but each d=11 fund is one pre-built,
+  already-diversified sector index rather than 38 separate per-country sector
+  sub-indices, so the d=11 equal-weighting step averages across only 11
+  return series instead of the paper's 11x67 grid. The d=17 level, built
+  entirely from United States industry SPDR ETFs (`exp1_meta.json`:
+  `n_industries=17` with no per-country breakdown), carries no cross-country
+  diversification at all. This narrower effective grid at d=11 and d=17 (11
+  and 17 independent return series instead of up to 67 times as many) is the
+  identified cause of the non-monotonic growth rates in Experiment 1 (EWI11
+  below EWI1 in level but not in diversification breadth) and the non-monotonic
+  degrees of freedom in Experiment 4. The cause is stated here as identified
+  from direct inspection of the construction inputs, not merely asserted from
+  the size of the gap.
 - **Interpretation of "no seemingly unusual index moves or jumps should be
   removed" (Sec. 4.1, data requirements).** No daily return was removed, capped
   or winsorized in the loaded data for any experiment.

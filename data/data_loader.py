@@ -66,6 +66,18 @@ SECTOR_ETFS = {
     "XLU": "Utilities", "XLRE": "Real Estate",
 }
 
+# iShares S&P Global 1200 / Global Sector ETFs: cap-weighted indices of
+# stocks from many countries within one GICS-style sector, used as a
+# country-diversified alternative to SECTOR_ETFS for the d=11 level (Sec.
+# 4.1 equally weights, within each classification group, index values that
+# are themselves already diversified across countries).
+GLOBAL_SECTOR_ETFS = {
+    "IXC": "Energy", "MXI": "Materials", "EXI": "Industrials",
+    "RXI": "Consumer Discretionary", "KXI": "Consumer Staples", "IXJ": "Health Care",
+    "IXG": "Financials", "IXN": "Information Technology", "IXP": "Communication Services",
+    "JXI": "Utilities", "REET": "Real Estate",
+}
+
 # GICS industry-level SPDR ETFs (United States), the highest resolution EWI
 # construction available from exchange-traded index funds.
 INDUSTRY_ETFS = {

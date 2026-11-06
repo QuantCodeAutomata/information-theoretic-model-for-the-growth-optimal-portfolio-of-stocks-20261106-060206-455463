@@ -1,5 +1,5 @@
 index,lr_statistic,chi2_critical_99,rejected_at_1pct,significance_level
 MSCI proxy,2.427983185967605,6.635,False,0.01
 EWI1,-1.0913936421275139e-11,6.635,False,0.01
-EWI11,4.326994429673505,6.635,False,0.01
+EWI11,1.295646118465811,6.635,False,0.01
 EWI17,4.6143675717758015e-05,6.635,False,0.01
